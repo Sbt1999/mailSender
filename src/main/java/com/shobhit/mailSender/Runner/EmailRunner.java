@@ -5,9 +5,11 @@ import com.shobhit.mailSender.Service.EmailService;
 import com.shobhit.mailSender.Service.HrContactReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+@Component // Added missing annotation
 public class EmailRunner implements CommandLineRunner {
 
     @Autowired
@@ -19,10 +21,19 @@ public class EmailRunner implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         System.out.println("EmailRunner started...");
-//        List<HrContact> contacts = contactReader.readContactsFromFile("src/main/resources/hr_contacts.txt");
-        List<HrContact> contacts = contactReader.readContactsFromFile("hr_contacts.txt");
-        for (HrContact contact : contacts) {
-            emailService.sendEmailToHr(contact);
+        try {
+            List<HrContact> contacts = contactReader.readContactsFromFile("hr_contacts.txt");
+            System.out.println("Found " + contacts.size() + " contacts");
+
+            for (HrContact contact : contacts) {
+                System.out.println("Sending email to: " + contact.getCompany() + " - " + contact.getEmail());
+                emailService.sendEmailToHr(contact);
+                Thread.sleep(2000); // Add delay between emails to avoid spam detection
+            }
+            System.out.println("Email sending completed!");
+        } catch (Exception e) {
+            System.err.println("Error in EmailRunner: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
